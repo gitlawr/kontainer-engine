@@ -11,6 +11,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+type contextKeyType struct{}
+
 type Interface interface {
 	RESTClient() rest.Interface
 	controller.Starter
@@ -53,6 +55,9 @@ type Interface interface {
 	ClusterAlertsGetter
 	ProjectAlertsGetter
 	ComposeConfigsGetter
+	ProjectCatalogsGetter
+	ClusterCatalogsGetter
+	KontainerDriversGetter
 }
 
 type Client struct {
@@ -98,6 +103,22 @@ type Client struct {
 	clusterAlertControllers                            map[string]ClusterAlertController
 	projectAlertControllers                            map[string]ProjectAlertController
 	composeConfigControllers                           map[string]ComposeConfigController
+	projectCatalogControllers                          map[string]ProjectCatalogController
+	clusterCatalogControllers                          map[string]ClusterCatalogController
+	kontainerDriverControllers                         map[string]KontainerDriverController
+}
+
+func Factory(ctx context.Context, config rest.Config) (context.Context, controller.Starter, error) {
+	c, err := NewForConfig(config)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	return context.WithValue(ctx, contextKeyType{}, c), c, nil
+}
+
+func From(ctx context.Context) Interface {
+	return ctx.Value(contextKeyType{}).(Interface)
 }
 
 func NewForConfig(config rest.Config) (Interface, error) {
@@ -151,6 +172,9 @@ func NewForConfig(config rest.Config) (Interface, error) {
 		clusterAlertControllers:                            map[string]ClusterAlertController{},
 		projectAlertControllers:                            map[string]ProjectAlertController{},
 		composeConfigControllers:                           map[string]ComposeConfigController{},
+		projectCatalogControllers:                          map[string]ProjectCatalogController{},
+		clusterCatalogControllers:                          map[string]ClusterCatalogController{},
+		kontainerDriverControllers:                         map[string]KontainerDriverController{},
 	}, nil
 }
 
@@ -654,6 +678,45 @@ type ComposeConfigsGetter interface {
 func (c *Client) ComposeConfigs(namespace string) ComposeConfigInterface {
 	objectClient := objectclient.NewObjectClient(namespace, c.restClient, &ComposeConfigResource, ComposeConfigGroupVersionKind, composeConfigFactory{})
 	return &composeConfigClient{
+		ns:           namespace,
+		client:       c,
+		objectClient: objectClient,
+	}
+}
+
+type ProjectCatalogsGetter interface {
+	ProjectCatalogs(namespace string) ProjectCatalogInterface
+}
+
+func (c *Client) ProjectCatalogs(namespace string) ProjectCatalogInterface {
+	objectClient := objectclient.NewObjectClient(namespace, c.restClient, &ProjectCatalogResource, ProjectCatalogGroupVersionKind, projectCatalogFactory{})
+	return &projectCatalogClient{
+		ns:           namespace,
+		client:       c,
+		objectClient: objectClient,
+	}
+}
+
+type ClusterCatalogsGetter interface {
+	ClusterCatalogs(namespace string) ClusterCatalogInterface
+}
+
+func (c *Client) ClusterCatalogs(namespace string) ClusterCatalogInterface {
+	objectClient := objectclient.NewObjectClient(namespace, c.restClient, &ClusterCatalogResource, ClusterCatalogGroupVersionKind, clusterCatalogFactory{})
+	return &clusterCatalogClient{
+		ns:           namespace,
+		client:       c,
+		objectClient: objectClient,
+	}
+}
+
+type KontainerDriversGetter interface {
+	KontainerDrivers(namespace string) KontainerDriverInterface
+}
+
+func (c *Client) KontainerDrivers(namespace string) KontainerDriverInterface {
+	objectClient := objectclient.NewObjectClient(namespace, c.restClient, &KontainerDriverResource, KontainerDriverGroupVersionKind, kontainerDriverFactory{})
+	return &kontainerDriverClient{
 		ns:           namespace,
 		client:       c,
 		objectClient: objectClient,

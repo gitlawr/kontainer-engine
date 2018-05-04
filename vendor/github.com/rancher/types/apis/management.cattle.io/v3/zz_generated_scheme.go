@@ -108,6 +108,12 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ProjectAlertList{},
 		&ComposeConfig{},
 		&ComposeConfigList{},
+		&ProjectCatalog{},
+		&ProjectCatalogList{},
+		&ClusterCatalog{},
+		&ClusterCatalogList{},
+		&KontainerDriver{},
+		&KontainerDriverList{},
 	)
 	return nil
 }
