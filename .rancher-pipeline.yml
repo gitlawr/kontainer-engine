@@ -1,0 +1,9 @@
+stages:
+- name: build
+  steps:
+  - runScriptConfig:
+      image: lawr/docker:dind
+      shellScript: |
+        nohup dockerd-entrypoint.sh --group 1000 &
+        sleep 3
+        make
