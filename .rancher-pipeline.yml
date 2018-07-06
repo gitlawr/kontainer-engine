@@ -7,3 +7,4 @@ stages:
         nohup dockerd-entrypoint.sh --group 1000 &
         sleep 3
         make
+    privileged: true
