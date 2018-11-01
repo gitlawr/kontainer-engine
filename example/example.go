@@ -41,13 +41,15 @@ func main() {
 	store := store.CLIPersistStore{}
 	service := service.NewEngineService(store)
 
-	endpoint, token, cert, err := service.Create(context.Background(), "daishan-test", &v3.KontainerDriver{}, spec)
+	endpoint, token, cacert,clientcert,clientkey, err := service.Create(context.Background(), "daishan-test", &v3.KontainerDriver{}, spec)
 	if err != nil {
 		logrus.Fatal(err)
 	}
 	fmt.Println(endpoint)
 	fmt.Println(token)
-	fmt.Println(cert)
+	fmt.Println(cacert)
+	fmt.Println(clientcert)
+	fmt.Println(clientkey)
 	err = service.Remove(context.Background(), "daishan-test", &v3.KontainerDriver{}, spec)
 	if err != nil {
 		logrus.Fatal(err)
